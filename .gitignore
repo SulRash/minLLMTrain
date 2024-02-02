@@ -156,3 +156,4 @@ cython_debug/
 
 # Runs
 runs/*
+outputs/*
