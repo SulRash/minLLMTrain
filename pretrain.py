@@ -45,7 +45,7 @@ def train(
     model.train()
     
     completed_steps = 0
-    checkpoint_step = int(num_training_steps * checkpoint_interval)  # Calculate the step for checkpointing
+    checkpoint_step = int(num_training_steps * checkpoint_interval)
 
     for epoch in range(epochs):
         for step, batch in tqdm(
