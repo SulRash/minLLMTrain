@@ -19,7 +19,7 @@ def get_datasets(
     dataset = load_dataset('json', data_files=[os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.jsonl')], split='train')
     dataset = dataset.map(lambda batch: tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True)
     dataset = dataset.map(lambda batch: pack_tokenized_entries(batch, tokenizer, max_length), remove_columns=dataset.column_names, batched=True)
-    dataset.set_format(type='torch', columns=['input_ids'])
+    dataset.set_format(type='torch')
 
     test_size = max(1, int(len(dataset) * 0.01))
     test_dataset = dataset.select(range(test_size))
