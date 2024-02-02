@@ -25,10 +25,20 @@ def evaluate(model, eval_dataloader, accelerator):
         perplexity = float("inf")
     return loss.item(), perplexity.item()
 
-def train(
-    accelerator, model, epochs, train_dataloader, num_training_steps, optimizer, lr_scheduler, tokenizer, eval_dataloader = None, eval_steps: int = 10, output_dir: str = "outputs/"
+def train( 
+    accelerator, 
+    model, 
+    tokenizer, 
+    train_dataloader, 
+    eval_dataloader, 
+    optimizer, 
+    scheduler, 
+    num_training_steps: int, 
+    gradient_accumulation_steps: int = 1,
+    epochs: int = 1,
+    eval_steps: int = 10, 
+    save_dir: str = "outputs/"
 ):
-    gradient_accumulation_steps = 1
 
     model.train()
     completed_steps = 0
@@ -49,7 +59,7 @@ def train(
             if step % gradient_accumulation_steps == 0:
                 accelerator.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
-                lr_scheduler.step()
+                scheduler.step()
                 optimizer.zero_grad()
                 completed_steps += 1
             if (step % (eval_steps * gradient_accumulation_steps)) == 0:
@@ -58,9 +68,9 @@ def train(
                 model.train()
                 accelerator.wait_for_everyone()
                 unwrapped_model = accelerator.unwrap_model(model)
-                unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
+                unwrapped_model.save_pretrained(save_dir, save_function=accelerator.save)
                 if accelerator.is_main_process:
-                    tokenizer.save_pretrained(output_dir)
+                    tokenizer.save_pretrained(save_dir)
  
 
 def main():
@@ -96,15 +106,17 @@ def main():
     )
     
     train(
-        model=model,
         accelerator=accelerator,
-        epochs=args.epochs,
+        model=model,
+        tokenizer=tokenizer,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
-        num_training_steps=num_training_steps,
         optimizer=optimizer,
-        lr_scheduler=scheduler,
-        tokenizer=tokenizer,
+        scheduler=scheduler,
+        num_training_steps=num_training_steps,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        epochs=args.epochs,
+        save_dir=args.save_dir
     )
 
 main()
