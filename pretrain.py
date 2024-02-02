@@ -106,3 +106,5 @@ def main():
         lr_scheduler=scheduler,
         tokenizer=tokenizer,
     )
+
+main()
