@@ -5,7 +5,7 @@ from torch.utils.data.dataloader import DataLoader
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset, Dataset
 
-from core.data.preprocess import pack_texts, packed_tokenize
+from core.data.preprocess import *
 
 from typing import Tuple
 
@@ -17,9 +17,8 @@ def get_datasets(
         text_field: str = "text"
 ) -> Tuple[Dataset, Dataset]:
     dataset = load_dataset('json', data_files=[os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.jsonl')], split='train')
-    dataset = dataset.map(lambda batch: pack_texts(batch, max_length, text_field), remove_columns=dataset.column_names, batched=True)
-    dataset = dataset.map(lambda batch: packed_tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True)
-    
+    dataset = dataset.map(lambda batch: tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True)
+    dataset = dataset.map(lambda batch: pack_tokenized_entries(batch, tokenizer, max_length), remove_columns=dataset.column_names, batched=True)
     dataset.set_format(type='torch', columns=['input_ids'])
 
     test_size = max(1, int(len(dataset) * 0.01))
