@@ -1,4 +1,4 @@
-from transformers import AutoConfig, AutoModel, LlamaTokenizerFast
+from transformers import AutoConfig, AutoModel, AutoTokenizer, LlamaTokenizerFast
 
 from typing import Dict, List
 
@@ -17,14 +17,19 @@ def get_grouped_params(model, no_decay=["bias", "LayerNorm.weight"]) -> List[Dic
     ]
 
 def get_config(config_path: str):
-    config = AutoConfig().from_pretrained(config_path)
+    config = AutoConfig.from_pretrained(config_path)
     return config
 
 def get_model(config, save_dir: str):
     config.save_pretrained(save_dir)
-    return AutoModel().from_config(config)
+    return AutoModel.from_config(config)
 
 def get_tokenizer(tokenizer_path: str, save_dir: str):
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+    tokenizer.save_pretrained(save_dir)
+    return tokenizer
+
+def get_tokenizer_from_file(tokenizer_path: str, save_dir: str):
     tokenizer = LlamaTokenizerFast(
         vocab_file=tokenizer_path
     )
