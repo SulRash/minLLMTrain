@@ -4,6 +4,7 @@ def get_train_args() -> Namespace:
     
     parser = ArgumentParser()
     
+    parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=5e-4)
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
