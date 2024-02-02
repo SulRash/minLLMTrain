@@ -1,9 +1,8 @@
-from transformers import AutoConfig, AutoModel, AutoTokenizer
+from transformers import AutoConfig, AutoModel, LlamaTokenizerFast
 
 from typing import Dict, List
 
 def get_grouped_params(model, no_decay=["bias", "LayerNorm.weight"]) -> List[Dict]:
-    
     weight_decay = 0.1
     
     params_with_wd, params_without_wd = [], []
@@ -17,20 +16,17 @@ def get_grouped_params(model, no_decay=["bias", "LayerNorm.weight"]) -> List[Dic
         {"params": params_without_wd, "weight_decay": 0.0},
     ]
 
-def get_model(config_path: str, save_dir: str):
-    """
-    Instantiates a fresh model given a pre-existing model's config file.
-
-    Args:
-        config_path (str): Path to a huggingface config file.
-
-    Returns:
-        Huggingface model.
-    """
+def get_config(config_path: str):
     config = AutoConfig().from_pretrained(config_path)
+    return config
 
+def get_model(config, save_dir: str):
     config.save_pretrained(save_dir)
-    return AutoModel.from_config(config)
+    return AutoModel().from_config(config)
 
 def get_tokenizer(tokenizer_path: str, save_dir: str):
-    AutoTokenizer.from_pretrained
+    tokenizer = LlamaTokenizerFast(
+        vocab_file=tokenizer_path
+    )
+    tokenizer.save_pretrained(save_dir)
+    return tokenizer
