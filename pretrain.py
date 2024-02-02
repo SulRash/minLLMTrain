@@ -8,7 +8,7 @@ from transformers import get_linear_schedule_with_warmup
 
 from core.model import *
 from core.data.dataloaders import *
-from outputs.minPreTrain.core.args import *
+from core.args import *
 
 def evaluate(model, eval_dataloader, accelerator):
     model.eval()
