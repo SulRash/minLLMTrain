@@ -5,7 +5,7 @@ from torch.utils.data.dataloader import DataLoader
 from transformers import PreTrainedTokenizer
 from datasets import load_dataset, Dataset
 
-from preprocess import pack_texts, packed_tokenize
+from core.data.preprocess import pack_texts, packed_tokenize
 
 from typing import Tuple
 
