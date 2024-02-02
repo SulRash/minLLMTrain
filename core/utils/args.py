@@ -9,7 +9,7 @@ def get_train_args() -> Namespace:
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
     
     parser.add_argument('--data_path', type=str)
-    parser.add_argument('--model_path', type=str)
+    parser.add_argument('--config_path', type=str)
     parser.add_argument('--tokenizer_path', type=str)
     parser.add_argument('--save_dir', type=str)
     
