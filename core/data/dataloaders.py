@@ -26,9 +26,6 @@ def get_datasets(
     test_dataset = dataset.select(range(test_size))
     train_dataset = dataset.select(range(test_size, len(dataset)))
     
-    print(train_dataset)
-    print(test_dataset)
-    
     return train_dataset, test_dataset
 
 def get_dataloader(dataset: Dataset, batch_size: int = 16) -> DataLoader:
