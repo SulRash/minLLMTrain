@@ -91,8 +91,8 @@ def main():
         num_training_steps=num_training_steps,
     )
 
-    model, optimizer, train_dataloader, scheduler = accelerator.prepare(
-        model, optimizer, train_dataloader, scheduler
+    model, optimizer, train_dataloader, scheduler, eval_dataloader = accelerator.prepare(
+        model, optimizer, train_dataloader, scheduler, eval_dataloader
     )
     
     train(
