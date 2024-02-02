@@ -68,7 +68,7 @@ def main():
     
     accelerator = Accelerator()
     
-    config = get_config(args.model_path)
+    config = get_config(args.config_path)
     tokenizer = get_tokenizer(args.tokenizer_path, args.save_dir)
     config.vocab_size = tokenizer.vocab_size
     model = get_model(config, args.save_dir)
