@@ -36,7 +36,7 @@ def train(
         for step, batch in tqdm(
             enumerate(train_dataloader), total=num_training_steps
         ):
-            loss = model(batch["input_ids"]).loss
+            loss = model(input_ids=batch['input_ids'], labels=batch['input_ids'], attention_mask=batch['attention_mask']).loss
             if step % 100 == 0:
                 accelerator.print(
                     {
