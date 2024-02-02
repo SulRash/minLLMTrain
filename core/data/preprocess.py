@@ -2,36 +2,36 @@ from transformers import PreTrainedTokenizer
 
 from typing import Dict, List
 
-def pack_texts(element, max_length: int, text_column_name: str = "text") -> Dict[str, List[str]]:
-    packed_texts = []
-    current_batch = ""
-    texts = element[text_column_name]
+def pack_tokenized_entries(tokenized_batch, tokenizer: PreTrainedTokenizer, max_length: int = 2048) -> Dict[str, List[int]]:
+    packed_input_ids = []
+    packed_attention_mask = []
+    current_input_ids = []
+    current_attention_mask = []
 
-    while texts:
-        for idx, entry in enumerate(texts):
-            entry_length = len(entry)
+    for input_ids in tokenized_batch['input_ids']:
+        if len(current_input_ids) + len(input_ids) + 1 > max_length:
+            current_input_ids += [tokenizer.pad_token_id] * (max_length - len(current_input_ids))
+            current_attention_mask += [0] * (max_length - len(current_attention_mask))
+            
+            packed_input_ids.append(current_input_ids)
+            packed_attention_mask.append(current_attention_mask)
+            
+            current_input_ids = []
+            current_attention_mask = []
 
-            if len(current_batch) + entry_length > max_length:
-                space_left = max_length - len(current_batch)
-                current_batch += entry[:space_left]
-                
-                texts[idx] = entry[space_left:]
+        current_input_ids.extend(input_ids + [tokenizer.eos_token_id])
+        current_attention_mask.extend([1] * len(input_ids) + [1])
 
-                if len(current_batch) == max_length:
-                    packed_texts.append(current_batch)
-                    current_batch = ""
-                    break
-            else:
-                current_batch += entry
-                texts[idx] = ""
+    if current_input_ids:
+        current_input_ids += [tokenizer.pad_token_id] * (max_length - len(current_input_ids))
+        current_attention_mask += [0] * (max_length - len(current_attention_mask))
+        packed_input_ids.append(current_input_ids)
+        packed_attention_mask.append(current_attention_mask)
 
-        texts = [text for text in texts if text]
+    return {
+        'input_ids': packed_input_ids,
+        'attention_mask': packed_attention_mask
+    }
 
-        if current_batch and not texts:
-            packed_texts.append(current_batch)
-            current_batch = ""
-
-    return {"text": packed_texts}
-
-def packed_tokenize(element, tokenizer: PreTrainedTokenizer) -> Dict[str, List[int]]:
-    return tokenizer(element["text"], padding='max_length', truncation=True, return_tensors="pt")
+def tokenize(element, tokenizer: PreTrainedTokenizer, pad: bool = False) -> Dict[str, List[int]]:
+    return tokenizer(element["text"], truncation=True, padding=pad)

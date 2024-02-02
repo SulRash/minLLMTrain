@@ -17,9 +17,9 @@ def get_datasets(
         text_field: str = "text"
 ) -> Tuple[Dataset, Dataset]:
     dataset = load_dataset('json', data_files=[os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.jsonl')], split='train')
-
-    dataset = dataset.map(lambda batch: pack_texts(batch, max_length, text_field), remove_columns=dataset.column_names, batched=True, batch_size=batch_size)
-    dataset = dataset.map(lambda batch: packed_tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True, batch_size=batch_size)
+    dataset = dataset.map(lambda batch: pack_texts(batch, max_length, text_field), remove_columns=dataset.column_names, batched=True)
+    dataset = dataset.map(lambda batch: packed_tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True)
+    
     dataset.set_format(type='torch', columns=['input_ids'])
 
     test_size = max(1, int(len(dataset) * 0.01))
