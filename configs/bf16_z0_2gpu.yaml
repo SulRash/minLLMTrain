@@ -1,0 +1,37 @@
+compute_environment: LOCAL_MACHINE
+
+deepspeed_config: {
+  "bf16": {
+      "enabled": true
+  },
+
+  "zero_optimization": {
+      "stage": 0
+  },
+
+  "flops_profiler": {
+      "enabled": true,
+      "profile_step": 1,
+      "module_depth": -1,
+      "top_modules": 1,
+      "detailed": true,
+      "output_file": null
+  },
+  
+  "gradient_accumulation_steps": "auto",
+  "gradient_clipping": "auto",
+  "steps_per_print": 2000,
+  "train_batch_size": "auto",
+  "train_micro_batch_size_per_gpu": "auto",
+  "wall_clock_breakdown": false
+}
+
+distributed_type: MULTI_GPU
+fsdp_config: {}
+machine_rank: 0
+main_process_ip: null
+main_process_port: null
+mixed_precision: bf16
+num_machines: 1
+num_processes: 2
+use_cpu: false

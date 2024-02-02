@@ -1,4 +1,4 @@
-from transformers import AutoConfig, LlamaForCausalLM, AutoTokenizer, LlamaTokenizerFast
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, LlamaTokenizerFast
 
 from typing import Dict, List
 
@@ -21,7 +21,7 @@ def get_config(config_path: str):
     return config
 
 def get_model(config):
-    return LlamaForCausalLM(config)
+    return AutoModelForCausalLM.from_config(config)
 
 def get_tokenizer(tokenizer_path: str):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
