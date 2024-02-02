@@ -98,9 +98,9 @@ def main():
     accelerator = Accelerator()
     
     config = get_config(args.config_path)
-    tokenizer = get_tokenizer(args.tokenizer_path, args.save_dir)
+    tokenizer = get_tokenizer(args.tokenizer_path)
     config.vocab_size = tokenizer.vocab_size
-    model = get_model(config, args.save_dir)
+    model = get_model(config)
 
     train_dataset, test_dataset = get_datasets(
         directory=args.data_path,

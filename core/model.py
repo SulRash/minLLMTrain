@@ -20,14 +20,14 @@ def get_config(config_path: str):
     config = AutoConfig.from_pretrained(config_path)
     return config
 
-def get_model(config, save_dir: str):
+def get_model(config):
     return LlamaForCausalLM(config)
 
-def get_tokenizer(tokenizer_path: str, save_dir: str):
+def get_tokenizer(tokenizer_path: str):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     return tokenizer
 
-def get_tokenizer_from_file(tokenizer_path: str, save_dir: str):
+def get_tokenizer_from_file(tokenizer_path: str):
     tokenizer = LlamaTokenizerFast(
         vocab_file=tokenizer_path
     )
