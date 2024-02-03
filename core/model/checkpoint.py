@@ -20,7 +20,11 @@ def save_unwrapped(
     os.makedirs(checkpoint_dir, exist_ok=True)
     accelerator.wait_for_everyone()
     unwrapped_model = accelerator.unwrap_model(model)
-    unwrapped_model.save_pretrained(checkpoint_dir, save_function=accelerator.save)
+    unwrapped_model.save_pretrained(
+        checkpoint_dir, 
+        save_function=accelerator.save,
+        state_dict=accelerator.get_state_dict(model)
+    )
     if accelerator.is_main_process:
         tokenizer.save_pretrained(checkpoint_dir)
     accelerator.print(f"Checkpoint saved at {checkpoint_dir}")

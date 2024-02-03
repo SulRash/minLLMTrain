@@ -3,95 +3,24 @@ import torch
 from tqdm import tqdm
 
 from torch.optim import AdamW
-from accelerate import Accelerator
+from accelerate import Accelerator, DistributedType
+from accelerate.utils import MegatronLMDummyScheduler
 from transformers import get_linear_schedule_with_warmup
 
-from core.model.checkpoint import *
+from core.train import train
 from core.model.load import *
 from core.data.dataloaders import *
 from core.args import *
 
-def evaluate(model, eval_dataloader, accelerator):
-    model.eval()
-    losses = []
-    for step, batch in enumerate(eval_dataloader):
-        with torch.no_grad():
-            outputs = model(batch["input_ids"], labels=batch["input_ids"])
-
-        losses.append(accelerator.gather(outputs.loss))
-    loss = torch.mean(torch.cat(losses))
-    try:
-        perplexity = torch.exp(loss)
-    except OverflowError:
-        perplexity = float("inf")
-    return loss.item(), perplexity.item()
-
-def train( 
-    accelerator, 
-    model, 
-    tokenizer, 
-    train_dataloader, 
-    eval_dataloader, 
-    optimizer, 
-    scheduler, 
-    gradient_accumulation_steps: int = 1,
-    epochs: int = 1,
-    eval_steps: int = 10,
-    checkpoint_interval: float = 0.5,
-    save_dir: str = "outputs/"
-):
-
-    model.train()
-    
-    completed_steps = 0
-    checkpoint_step = int(len(train_dataloader) * epochs * checkpoint_interval)
-
-    for epoch in range(epochs):
-        for step, batch in tqdm(
-            enumerate(train_dataloader), total=len(train_dataloader)
-        ):
-            loss = model(input_ids=batch['input_ids'], labels=batch['input_ids'], attention_mask=batch['attention_mask']).loss
-            
-            if step % 100 == 0:
-                accelerator.print(
-                    {
-                        "steps": completed_steps,
-                        "loss/train": loss * gradient_accumulation_steps,
-                    }
-                )
-            
-            loss = loss / gradient_accumulation_steps
-            accelerator.backward(loss)
-            
-            # Stepping
-            if step % gradient_accumulation_steps == 0:
-                accelerator.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
-                scheduler.step()
-                optimizer.zero_grad()
-                completed_steps += 1
-                
-            # Checkpointing
-            if completed_steps % checkpoint_step == 0 and completed_steps != 0:
-                checkpoint(
-                    accelerator, completed_steps, save_dir
-                )
-            
-            # Evaluation
-            if (step % (eval_steps * gradient_accumulation_steps)) == 0:
-                eval_loss, perplexity = evaluate(model, eval_dataloader, accelerator)
-                accelerator.print({"loss/eval": eval_loss, "perplexity": perplexity})
-                model.train()
-    
-    # Save final model as HF model
-    save_unwrapped(
-        accelerator, model, tokenizer, save_dir
-    )
-
 def main():
     args = get_train_args()
     
-    accelerator = Accelerator(project_dir=args.save_dir)
+    accelerator = Accelerator(project_dir=args.save_dir, gradient_accumulation_steps=args.gradient_accumulation_steps)
+
+    if accelerator.distributed_type == DistributedType.MEGATRON_LM:
+        total_batch_size = accelerator.state.megatron_lm_plugin.global_batch_size
+    else:
+        total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
     
     model, tokenizer, config = get_all_modelling(args.config_path, args.tokenizer_path)
 
@@ -107,11 +36,19 @@ def main():
     num_training_steps = (len(train_dataloader) * args.epochs) // args.gradient_accumulation_steps
     
     optimizer = AdamW(get_grouped_params(model), lr=args.lr)
-    scheduler = get_linear_schedule_with_warmup(
-        optimizer=optimizer,
-        num_warmup_steps=1000,
-        num_training_steps=num_training_steps,
-    )
+    
+    if accelerator.distributed_type == DistributedType.MEGATRON_LM:
+        scheduler = MegatronLMDummyScheduler(
+            optimizer=optimizer,
+            total_num_steps=num_training_steps,
+            warmup_num_steps=args.num_warmup_steps,
+        )
+    else:
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer=optimizer,
+            num_warmup_steps=args.num_warmup_steps,
+            num_training_steps=num_training_steps,
+        )
 
     model, optimizer, train_dataloader, scheduler, eval_dataloader = accelerator.prepare(
         model, optimizer, train_dataloader, scheduler, eval_dataloader
