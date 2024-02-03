@@ -22,14 +22,14 @@ def main():
     train_dataset, test_dataset = get_datasets(
         directory=args.data_path,
         tokenizer=tokenizer,
-        batch_size=args.batch_size,
+        batch_size=args.per_device_batch_size,
         max_length=config.max_position_embeddings,
         text_field=args.text_field
     )
     train_dataloader, eval_dataloader = get_dataloader(train_dataset, args.per_device_batch_size), get_dataloader(test_dataset, args.per_device_batch_size)
     optimizer = AdamW(get_grouped_params(model), lr=args.lr)
 
-    num_training_steps = (len(train_dataloader) * args.epochs) // args.gradient_accumulation_steps    
+    num_training_steps = (((len(train_dataloader) * args.epochs) // args.gradient_accumulation_steps) // accelerator.num_processes)    
     
     if accelerator.distributed_type == DistributedType.MEGATRON_LM:
         scheduler = MegatronLMDummyScheduler(
@@ -49,6 +49,9 @@ def main():
     )
     accelerator.register_for_checkpointing(scheduler)
     
+    starting_epoch = 0
+    resume_step = 0
+    
     if args.resume_from_checkpoint:
         accelerator, starting_epoch, resume_step = load_checkpoint(
             accelerator=accelerator,
@@ -60,6 +63,9 @@ def main():
     progress_bar = tqdm(range(num_training_steps), disable=not accelerator.is_local_main_process)
     progress_bar.update(starting_epoch * math.ceil(len(train_dataloader) / args.gradient_accumulation_steps))
     
+    checkpoint_step = num_training_steps * args.checkpoint_interval
+    eval_step = num_training_steps * args.eval_interval
+    
     train(
         accelerator=accelerator,
         model=model,
@@ -69,11 +75,13 @@ def main():
         optimizer=optimizer,
         scheduler=scheduler,
         progress_bar=progress_bar,
+        per_device_batch_size=args.per_device_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         epochs=args.epochs,
         starting_epoch=starting_epoch,
         resume_step=resume_step,
-        checkpoint_interval=args.checkpoint_interval,
+        checkpoint_step=checkpoint_step,
+        eval_step=eval_step,
         save_dir=args.save_dir
     )
 

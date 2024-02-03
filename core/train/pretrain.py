@@ -37,19 +37,19 @@ def train(
     optimizer, 
     scheduler, 
     progress_bar,
+    per_device_batch_size,
     gradient_accumulation_steps: int = 1,
     epochs: int = 1,
     starting_epoch: int = 0,
     resume_step: int = 0,
-    eval_steps: int = 10,
-    checkpoint_interval: float = 0.5,
+    eval_step: int = 0,
+    checkpoint_step: int = 0,
     save_dir: str = "outputs/"
 ):
 
     model.train()
     
     completed_steps = 0
-    checkpoint_step = int(len(train_dataloader) * epochs * checkpoint_interval)
 
     for epoch in range(starting_epoch, epochs):
         for step, batch in enumerate(train_dataloader):
@@ -89,8 +89,8 @@ def train(
                 )
             
             # Evaluation
-            if (step % (eval_steps * gradient_accumulation_steps)) == 0:
-                eval_loss, perplexity = evaluate(model, eval_dataloader, accelerator)
+            if (step % (eval_step * gradient_accumulation_steps)) == 0:
+                eval_loss, perplexity = evaluate(model, eval_dataloader, accelerator, per_device_batch_size)
                 accelerator.print({"loss/eval": eval_loss, "perplexity": perplexity})
                 model.train()
     
