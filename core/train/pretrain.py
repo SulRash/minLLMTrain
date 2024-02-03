@@ -36,8 +36,11 @@ def train(
     eval_dataloader, 
     optimizer, 
     scheduler, 
+    progress_bar,
     gradient_accumulation_steps: int = 1,
     epochs: int = 1,
+    starting_epoch: int = 0,
+    resume_step: int = 0,
     eval_steps: int = 10,
     checkpoint_interval: float = 0.5,
     save_dir: str = "outputs/"
@@ -48,10 +51,17 @@ def train(
     completed_steps = 0
     checkpoint_step = int(len(train_dataloader) * epochs * checkpoint_interval)
 
-    for epoch in range(epochs):
+    for epoch in range(starting_epoch, epochs):
         for step, batch in tqdm(
             enumerate(train_dataloader), total=len(train_dataloader)
         ):
+            
+            if epoch == starting_epoch and step < resume_step:
+                if step % gradient_accumulation_steps == 0:
+                    progress_bar.update(1)
+                    completed_steps += 1
+                continue
+            
             loss = model(input_ids=batch['input_ids'], labels=batch['input_ids'], attention_mask=batch['attention_mask']).loss
             
             if step % 100 == 0:
@@ -75,7 +85,7 @@ def train(
                 
             # Checkpointing
             if completed_steps % checkpoint_step == 0 and completed_steps != 0:
-                checkpoint(
+                save_checkpoint(
                     accelerator, completed_steps, save_dir
                 )
             
