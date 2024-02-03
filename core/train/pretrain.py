@@ -1,22 +1,31 @@
 import torch
 
 from tqdm import tqdm
+from accelerate import DistributedType
 
 from core.model.checkpoint import *
 
-def evaluate(model, eval_dataloader, accelerator):
+def evaluate(model, eval_dataloader, accelerator, per_device_batch_size):
     model.eval()
     losses = []
     for step, batch in enumerate(eval_dataloader):
         with torch.no_grad():
             outputs = model(batch["input_ids"], labels=batch["input_ids"])
-
-        losses.append(accelerator.gather(outputs.loss))
-    loss = torch.mean(torch.cat(losses))
+        loss = outputs.loss
+        if accelerator.distributed_type == DistributedType.MEGATRON_LM:
+            losses.append(loss)
+        else:
+            losses.append(accelerator.gather_for_metrics(loss.repeat(per_device_batch_size)))
     try:
+        if accelerator.distributed_type == DistributedType.MEGATRON_LM:
+            losses = torch.tensor(losses)
+        else:
+            losses = torch.cat(losses)
+        loss = torch.mean(losses)
         perplexity = torch.exp(loss)
     except OverflowError:
         perplexity = float("inf")
+                
     return loss.item(), perplexity.item()
 
 def train( 

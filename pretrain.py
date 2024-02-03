@@ -7,7 +7,7 @@ from accelerate import Accelerator, DistributedType
 from accelerate.utils import MegatronLMDummyScheduler
 from transformers import get_linear_schedule_with_warmup
 
-from core.train import train
+from core.pretrain import train
 from core.model.load import *
 from core.data.dataloaders import *
 from core.args import *
