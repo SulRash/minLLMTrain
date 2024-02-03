@@ -49,7 +49,7 @@ def train(
 
     for epoch in range(epochs):
         for step, batch in tqdm(
-            enumerate(train_dataloader), total=num_training_steps
+            enumerate(train_dataloader), total=len(train_dataloader)
         ):
             loss = model(input_ids=batch['input_ids'], labels=batch['input_ids'], attention_mask=batch['attention_mask']).loss
             
@@ -109,8 +109,8 @@ def main():
         max_length=config.max_position_embeddings,
         text_field=args.text_field
     )
-    train_dataloader, eval_dataloader = get_dataloader(train_dataset, args.batch_size), get_dataloader(test_dataset, args.batch_size)
     
+    train_dataloader, eval_dataloader = get_dataloader(train_dataset, args.batch_size), get_dataloader(test_dataset, args.batch_size)
     num_training_steps = (len(train_dataloader) * args.epochs) // args.gradient_accumulation_steps
     
     optimizer = AdamW(get_grouped_params(model), lr=args.lr)
@@ -123,7 +123,7 @@ def main():
     model, optimizer, train_dataloader, scheduler, eval_dataloader = accelerator.prepare(
         model, optimizer, train_dataloader, scheduler, eval_dataloader
     )
-    
+        
     train(
         accelerator=accelerator,
         model=model,
