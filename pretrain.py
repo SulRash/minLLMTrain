@@ -1,4 +1,4 @@
-import torch
+import math
 
 from tqdm import tqdm
 
@@ -57,7 +57,8 @@ def main():
             resume_from_checkpoint=args.resume_from_checkpoint
         )
     
-    progress_bar = tqdm(range(args.max_train_steps), disable=not accelerator.is_local_main_process)
+    progress_bar = tqdm(range(num_training_steps), disable=not accelerator.is_local_main_process)
+    progress_bar.update(starting_epoch * math.ceil(len(train_dataloader) / args.gradient_accumulation_steps))
     
     train(
         accelerator=accelerator,

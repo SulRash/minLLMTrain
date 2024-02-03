@@ -52,9 +52,7 @@ def train(
     checkpoint_step = int(len(train_dataloader) * epochs * checkpoint_interval)
 
     for epoch in range(starting_epoch, epochs):
-        for step, batch in tqdm(
-            enumerate(train_dataloader), total=len(train_dataloader)
-        ):
+        for step, batch in enumerate(train_dataloader):
             
             if epoch == starting_epoch and step < resume_step:
                 if step % gradient_accumulation_steps == 0:
@@ -81,6 +79,7 @@ def train(
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
+                progress_bar.update(1)
                 completed_steps += 1
                 
             # Checkpointing
