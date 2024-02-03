@@ -1,4 +1,4 @@
-accelerate launch --config_file configs/deepspeed.yaml pretrain.py \
+accelerate launch --config_file configs/fsdp.yaml --use_fsdp pretrain.py \
     --epochs 1 \
     --per_device_batch_size 4 \
     --data_path "." \
