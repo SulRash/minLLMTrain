@@ -6,7 +6,7 @@ from torch.optim import AdamW
 from accelerate import Accelerator
 from transformers import get_linear_schedule_with_warmup
 
-from core.model import *
+from core.model.load import *
 from core.data.dataloaders import *
 from core.args import *
 
