@@ -16,7 +16,7 @@ Deepspeed currently runs great! Check out the deepspeed configuration file in th
 
 ## Megatron-LM
 
-There's been some issues fully integrating Megatron-LM. Accelerate relies on (Huggingface's Megatron-LM repository)[https://github.com/huggingface/Megatron-LM]. The repository has long been abandoned, I am currently in the process of developing an updated fork that is compatible with Accelerate. In theory though, the training code here is designed to work with Megatron-LM.
+There's been some issues fully integrating Megatron-LM. Accelerate relies on [Huggingface's Megatron-LM repository](https://github.com/huggingface/Megatron-LM). The repository has long been abandoned, I am currently in the process of developing an updated fork that is compatible with Accelerate. In theory though, the training code here is designed to work with Megatron-LM.
 
 
 ## Fully Sharded Data Parallel
