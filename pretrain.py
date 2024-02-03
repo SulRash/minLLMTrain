@@ -20,7 +20,7 @@ def main():
     if accelerator.distributed_type == DistributedType.MEGATRON_LM:
         total_batch_size = accelerator.state.megatron_lm_plugin.global_batch_size
     else:
-        total_batch_size = args.per_device_train_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
+        total_batch_size = args.per_device_batch_size * accelerator.num_processes * args.gradient_accumulation_steps
     
     model, tokenizer, config = get_all_modelling(args.config_path, args.tokenizer_path)
 
@@ -32,7 +32,7 @@ def main():
         text_field=args.text_field
     )
     
-    train_dataloader, eval_dataloader = get_dataloader(train_dataset, args.batch_size), get_dataloader(test_dataset, args.batch_size)
+    train_dataloader, eval_dataloader = get_dataloader(train_dataset, args.per_device_batch_size), get_dataloader(test_dataset, args.per_device_batch_size)
     num_training_steps = (len(train_dataloader) * args.epochs) // args.gradient_accumulation_steps
     
     optimizer = AdamW(get_grouped_params(model), lr=args.lr)

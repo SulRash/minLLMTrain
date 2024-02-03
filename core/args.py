@@ -9,7 +9,7 @@ def get_train_args() -> Namespace:
     parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--checkpoint_interval', type=float, default=0.5)
     
-    parser.add_argument('--per_device_train_batch_size', type=int, default=4)
+    parser.add_argument('--per_device_batch_size', type=int, default=4)
     parser.add_argument('--lr', type=float, default=5e-4)
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
     
