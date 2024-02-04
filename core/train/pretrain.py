@@ -1,6 +1,5 @@
 import torch
 
-from tqdm import tqdm
 from accelerate import DistributedType
 
 from core.model.checkpoint import *
