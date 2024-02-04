@@ -30,7 +30,7 @@ def get_datasets(
     else:
         accelerator.print("Preprocessing datasets...")
         dataset = load_dataset('json', data_files=[os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.jsonl')], split='train')
-        dataset = dataset.map(lambda batch: tokenize(batch, tokenizer), remove_columns=dataset.column_names, batched=True)
+        dataset = dataset.map(lambda batch: tokenize(batch, tokenizer, text_field, False), remove_columns=dataset.column_names, batched=True)
         dataset = dataset.map(lambda batch: pack_tokenized_entries(batch, tokenizer, max_length), remove_columns=dataset.column_names, batched=True)
         dataset.set_format(type='torch')
         
