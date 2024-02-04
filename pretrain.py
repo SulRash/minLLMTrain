@@ -20,9 +20,9 @@ def main():
     
     model, tokenizer, config = get_all_modelling(args.config_path, args.tokenizer_path)
     train_dataset, test_dataset = get_datasets(
+        accelerator=accelerator,
         directory=args.data_path,
         tokenizer=tokenizer,
-        batch_size=args.per_device_batch_size,
         max_length=config.max_position_embeddings,
         text_field=args.text_field
     )
