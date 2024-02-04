@@ -63,8 +63,8 @@ def main():
     progress_bar = tqdm(range(num_training_steps), disable=not accelerator.is_local_main_process)
     progress_bar.update(starting_epoch * math.ceil(len(train_dataloader) / args.gradient_accumulation_steps))
     
-    checkpoint_step = num_training_steps * args.checkpoint_interval
-    eval_step = num_training_steps * args.eval_interval
+    checkpoint_step = int(num_training_steps * args.checkpoint_interval)
+    eval_step = int(num_training_steps * args.eval_interval)
     
     train(
         accelerator=accelerator,

@@ -1,7 +1,11 @@
 accelerate launch --config_file configs/deepspeed.yaml --use_deepspeed pretrain.py \
     --epochs 1 \
-    --per_device_batch_size 4 \
+    --lr 0.0004 \
+    --num_warmup_steps 1000 \
+    --per_device_batch_size 8 \
     --data_path "." \
     --config_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
     --tokenizer_path "TinyLlama/TinyLlama-1.1B-Chat-v1.0" \
+    --eval_interval 0.1 \
+    --checkpoint_interval 0.1 \
     --save_dir "runs/"

@@ -15,14 +15,10 @@ deepspeed_config: {
       "module_depth": -1,
       "top_modules": 1,
       "detailed": true,
-      "output_file": null
+      "output_file": "profile"
   },
   
-  "gradient_accumulation_steps": "auto",
-  "gradient_clipping": "auto",
   "steps_per_print": 2000,
-  "train_batch_size": "auto",
-  "train_micro_batch_size_per_gpu": "auto",
   "wall_clock_breakdown": false
 }
 
