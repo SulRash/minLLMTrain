@@ -33,5 +33,6 @@ def pack_tokenized_entries(tokenized_batch, tokenizer: PreTrainedTokenizer, max_
         'attention_mask': packed_attention_mask
     }
 
-def tokenize(element, tokenizer: PreTrainedTokenizer, pad: bool = False) -> Dict[str, List[int]]:
-    return tokenizer(element["text"], truncation=True, padding=pad)
+
+def tokenize(element, tokenizer: PreTrainedTokenizer, text_field: str = "text", pad: bool = False) -> Dict[str, List[int]]:
+    return tokenizer(element[text_field], truncation=True, padding=pad)
