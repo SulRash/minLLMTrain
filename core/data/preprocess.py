@@ -22,6 +22,10 @@ def pack_tokenized_entries(tokenized_batch, tokenizer: PreTrainedTokenizer, max_
         current_input_ids.extend(input_ids + [tokenizer.eos_token_id])
         current_attention_mask.extend([1] * len(input_ids) + [1])
 
+        if len(current_input_ids) > max_length:
+            current_input_ids = current_input_ids[:max_length]
+            current_attention_mask = current_attention_mask[:max_length]
+
     if current_input_ids:
         current_input_ids += [tokenizer.pad_token_id] * (max_length - len(current_input_ids))
         current_attention_mask += [0] * (max_length - len(current_attention_mask))
@@ -32,7 +36,6 @@ def pack_tokenized_entries(tokenized_batch, tokenizer: PreTrainedTokenizer, max_
         'input_ids': packed_input_ids,
         'attention_mask': packed_attention_mask
     }
-
 
 def tokenize(element, tokenizer: PreTrainedTokenizer, text_field: str = "text", pad: bool = False) -> Dict[str, List[int]]:
     return tokenizer(element[text_field], truncation=True, padding=pad)
