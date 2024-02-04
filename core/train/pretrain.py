@@ -60,7 +60,7 @@ def train(
                     completed_steps += 1
                 continue
             
-            loss = model(input_ids=batch['input_ids'], labels=batch['input_ids'], attention_mask=batch['attention_mask']).loss
+            loss = model(input_ids=batch['input_ids'], labels=batch['input_ids']).loss
             
             if step % 100 == 0:
                 accelerator.print(
