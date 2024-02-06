@@ -35,7 +35,10 @@ def get_tokenizer_from_file(tokenizer_path: str):
 
 def get_all_modelling(config_path, tokenizer_path):
     config = get_config(config_path)
-    tokenizer = get_tokenizer(tokenizer_path)
+    if tokenizer_path[-6:] == ".model":
+        tokenizer = get_tokenizer_from_file(tokenizer_path)
+    else:
+        tokenizer = get_tokenizer(tokenizer_path)
     config.vocab_size = tokenizer.vocab_size
     model = get_model(config)
     
